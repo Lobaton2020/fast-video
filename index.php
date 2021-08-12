@@ -45,7 +45,7 @@
         }
     </style>
     <script>
-        const IS_PRODUCTION = false;
+        const IS_PRODUCTION = true;
         const url = document.querySelector("#url")
         const name = document.querySelector("#name")
         const button = document.querySelector("#button")
@@ -152,8 +152,10 @@
                 logger.info("Load urls")
                 const data = JSON.parse(localStorage.getItem(name))
                 logger.debug(data)
-                const filtered= data.filter(({time})=>time > ((new Date().getTime()) - 864001 *1000 ));//un dia
-                saveUrls("URLS-VIDEO",filtered)
+                const filtered = data.filter(({
+                    time
+                }) => time > ((new Date().getTime()) - 864001 * 1000)); //un dia
+                saveUrls("URLS-VIDEO", filtered)
                 state.urls = filtered;
                 renderLinks()
                 logger.debug(filtered)
@@ -194,7 +196,7 @@
                 state.urls.push({
                     url: url.value,
                     name: name.value,
-                    time:new Date().getTime()
+                    time: new Date().getTime()
                 })
             } else {
                 state.urls = state.urls.map((item) => {
