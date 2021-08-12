@@ -45,7 +45,7 @@
         }
     </style>
     <script>
-        const IS_PRODUCTION = true;
+        const IS_PRODUCTION = false;
         const url = document.querySelector("#url")
         const name = document.querySelector("#name")
         const button = document.querySelector("#button")
@@ -61,7 +61,7 @@
         const points = () => {
             const data = []
 
-            for (let i = 0; i < 5000; i += 250) {
+            for (let i = 0; i < 2500; i += 250) {
                 let number = i.toString()
                 if (i < 1000) {
                     number = "0" + number;
@@ -77,78 +77,9 @@
         points().forEach(item => {
             document.querySelector("#velocity").innerHTML += item
         })
-        const loadUrls = (name) => {
-            try {
-                logger.info("Load urls")
-                const data = JSON.parse(localStorage.getItem(name))
-                logger.debug(data)
-                return data;
-            } catch (error) {
-                logger.error(error)
-                return []
-            }
-        };
-        const saveUrls = (name, urls) => {
-            try {
-                logger.info("Save urls")
-                localStorage.setItem(name, JSON.stringify(urls))
-                const data = JSON.parse(localStorage.getItem(name))
-                logger.debug(data)
-                return data;
-            } catch (error) {
-                logger.error(error)
-                return []
-            }
-        };
         const state = {
-            urls: loadUrls("URLS-VIDEO") || []
+            urls: []
         }
-        const observerChangeVelocity = (video) => {
-            const input = document.querySelector("#velocity")
-            input.addEventListener("change", () => {
-                logger.debug(parseFloat(input.value))
-                video.playbackRate = parseFloat(input.value);
-            })
-        }
-        const loadVideoImage = (url) => {
-            const app = document.querySelector("#app")
-            app.innerHTML = ""
-            const video = document.createElement("video")
-            video.src = url;
-            video.play();
-            video.playbackRate = 1.25;
-            video.controls = "enable"
-            app.appendChild(video)
-            observerChangeVelocity(video)
-        };
-
-        const addVideo = (e) => {
-            if (!url.value) return;
-            loadVideoImage(url.value)
-            if (!state.urls.find(({
-                    url: u
-                }) => u == url.value)) {
-                state.urls.push({
-                    url: url.value,
-                    name: name.value
-                })
-            } else {
-                state.urls = state.urls.map((item) => {
-                    if (item.url == url.value) {
-                        return Object.assign(item, {
-                            name: name.value
-                        })
-                    }
-                    return item
-                })
-            }
-            saveUrls("URLS-VIDEO", state.urls)
-            localStorage.setItem("LAST-URL-VIDEO", JSON.stringify({
-                name: name.value,
-                url: url.value
-            }))
-            renderLinks()
-        };
         const reproduceNewVideo = (e) => {
             e.preventDefault()
             const data = JSON.parse(e.target.dataset.info);
@@ -204,6 +135,86 @@
                 elem.appendChild(li)
             })
         }
+        const saveUrls = (name, urls) => {
+            try {
+                logger.info("Save urls")
+                localStorage.setItem(name, JSON.stringify(urls))
+                const data = JSON.parse(localStorage.getItem(name))
+                logger.debug(data)
+                return data;
+            } catch (error) {
+                logger.error(error)
+                return []
+            }
+        };
+        const loadUrls = (name) => {
+            try {
+                logger.info("Load urls")
+                const data = JSON.parse(localStorage.getItem(name))
+                logger.debug(data)
+                const filtered= data.filter(({time})=>time > ((new Date().getTime()) - 864001 *1000 ));//un dia
+                saveUrls("URLS-VIDEO",filtered)
+                state.urls = filtered;
+                renderLinks()
+                logger.debug(filtered)
+                return filtered
+            } catch (error) {
+                logger.error(error)
+                return []
+            }
+        };
+        state.urls = loadUrls("URLS-VIDEO") || []
+
+        const observerChangeVelocity = (video) => {
+            const input = document.querySelector("#velocity")
+            input.addEventListener("change", () => {
+                logger.debug(parseFloat(input.value))
+                video.playbackRate = parseFloat(input.value);
+            })
+        }
+        const loadVideoImage = (url) => {
+            const app = document.querySelector("#app")
+            app.innerHTML = ""
+            const video = document.createElement("video")
+            video.src = url;
+            video.play();
+            video.playbackRate = 1.25;
+            video.controls = "enable"
+            app.appendChild(video)
+            observerChangeVelocity(video)
+        };
+
+        const addVideo = (e) => {
+            loadUrls("URLS-VIDEO")
+            if (!url.value) return;
+            loadVideoImage(url.value)
+            if (!state.urls.find(({
+                    url: u
+                }) => u == url.value)) {
+                state.urls.push({
+                    url: url.value,
+                    name: name.value,
+                    time:new Date().getTime()
+                })
+            } else {
+                state.urls = state.urls.map((item) => {
+                    if (item.url == url.value) {
+                        return Object.assign(item, {
+                            name: name.value
+                        })
+                    }
+                    return item
+                })
+            }
+            saveUrls("URLS-VIDEO", state.urls)
+            localStorage.setItem("LAST-URL-VIDEO", JSON.stringify({
+                name: name.value,
+                url: url.value
+            }))
+            renderLinks()
+        };
+
+
         document.addEventListener("DOMContentLoaded", () => {
             button.addEventListener("click", addVideo);
             renderLinks()
