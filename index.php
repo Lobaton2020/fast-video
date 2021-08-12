@@ -101,7 +101,7 @@
             }
         };
         const state = {
-            urls: loadUrls("URLS-VIDEO")
+            urls: loadUrls("URLS-VIDEO") || []
         }
         const observerChangeVelocity = (video) => {
             const input = document.querySelector("#velocity")
