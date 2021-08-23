@@ -61,7 +61,7 @@
         const points = () => {
             const data = []
 
-            for (let i = 0; i < 2500; i += 250) {
+            for (let i = 0; i < 4001; i += 250) {
                 let number = i.toString()
                 if (i < 1000) {
                     number = "0" + number;
