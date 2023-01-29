@@ -1,7 +1,9 @@
 const express = require('express')
+const ServerlessHttp = require('serverless-http')
 const app = express()
+const router = express.Router()
 let visits = 0
-app.get('/', (req, res) => {
+router.get('/', (req, res) => {
     visits++
     res.sendFile(__dirname + '/index.html', {
         headers: {
@@ -9,9 +11,9 @@ app.get('/', (req, res) => {
         }
     })
 })
-app.get('/visits', (req, res) => {
+router.get('/visits', (req, res) => {
     res.json({ visits })
 })
-app.listen(process.env.PORT || 3000, () => {
-    console.log('Server started on port 3000')
-})
+
+app.use("/.netlify/functions/api", router)
+module.exports.handler = ServerlessHttp(app)
